@@ -1,45 +1,58 @@
-#!/usr/bin/env bashio
-set -e
+#!/bin/sh
 
-CONFIG_PATH=/data/options.json
-FRPC_INI=/etc/frp/frpc.ini
+CONFIG_FILE="/share/frpc.ini"
+LOG_FILE="/share/frpc.log"
 
-# 生成 frpc.ini
-cat > "$FRPC_INI" <<EOF
+# 从环境变量获取配置
+SERVER_ADDR=${SERVER_ADDR}
+SERVER_PORT=${SERVER_PORT}
+TOKEN=${TOKEN}
+LOCAL_PORT=${LOCAL_PORT}
+PROXY_NAME=${PROXY_NAME}
+PROXY_TYPE=${PROXY_TYPE}
+ADMIN_PORT=${ADMIN_PORT}
+ADMIN_USER=${ADMIN_USER}
+ADMIN_PWD=${ADMIN_PWD}
+
+# 验证必要参数
+if [ -z "${SERVER_ADDR}" ]; then
+  echo "Error: server_addr is required" | tee -a ${LOG_FILE}
+  exit 1
+fi
+
+# 生成 frpc.ini 配置文件
+cat > ${CONFIG_FILE} << EOF
 [common]
-server_addr = $(bashio::config 'server_addr')
-server_port = $(bashio::config 'server_port')
-token = $(bashio::config 'token')
+server_addr = ${SERVER_ADDR}
+server_port = ${SERVER_PORT}
+log_file = ${LOG_FILE}
 log_level = info
-login_fail_exit = false
-
 EOF
 
-# 动态生成 tunnel 段落
-bashio::config 'tunnels' | jq -r '.[] | @base64' | while read -r tunnel; do
-    _jq() {
-        echo "$tunnel" | base64 -d | jq -r "$1"
-    }
+# 添加 token
+if [ -n "${TOKEN}" ]; then
+  echo "token = ${TOKEN}" >> ${CONFIG_FILE}
+fi
 
-    name=$(_jq '.name')
-    type=$(_jq '.type')
-    local_ip=$(_jq '.local_ip')
-    local_port=$(_jq '.local_port')
-    remote_port=$(_jq '.remote_port')
-    subdomain=$(_jq '.subdomain // ""')
-    custom_domains=$(_jq '.custom_domains // ""')
+# 添加 Admin UI（如果 admin_user 不为空）
+if [ -n "${ADMIN_USER}" ]; then
+  cat >> ${CONFIG_FILE} << EOF
+admin_addr = 0.0.0.0
+admin_port = ${ADMIN_PORT}
+admin_user = ${ADMIN_USER}
+admin_pwd = ${ADMIN_PWD}
+EOF
+fi
 
-    cat >> "$FRPC_INI" <<EOF
-[$name]
-type = $type
-local_ip = $local_ip
-local_port = $local_port
-remote_port = $remote_port
+# 添加代理配置
+cat >> ${CONFIG_FILE} << EOF
+
+[${PROXY_NAME}]
+type = ${PROXY_TYPE}
+local_ip = 0.0.0.0
+local_port = ${LOCAL_PORT}
 EOF
 
-    [[ -n "$subdomain" ]] && echo "subdomain = $subdomain" >> "$FRPC_INI"
-    [[ -n "$custom_domains" ]] && echo "custom_domains = $custom_domains" >> "$FRPC_INI"
-
-done
-
-exec /usr/bin/frpc -c "$FRPC_INI"
+# 启动 frpc
+echo "Starting frpc with config: ${CONFIG_FILE}" | tee -a ${LOG_FILE}
+/usr/bin/frpc -c ${CONFIG_FILE}
