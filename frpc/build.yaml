@@ -1,0 +1,10 @@
+# 多架构统一指向 ghcr.io，国内网络可直连
+build_from:
+  aarch64: "ghcr.io/home-assistant/aarch64-base:3.10"
+  amd64: "ghcr.io/home-assistant/amd64-base:3.10"
+  armhf: "ghcr.io/home-assistant/armhf-base:3.10"
+  armv7: "ghcr.io/home-assistant/armv7-base:3.10"
+  i386: "ghcr.io/home-assistant/i386-base:3.10"
+
+# 如需国内镜像，把 ghcr.io 换成
+# registry.cn-hangzhou.aliyuncs.com/homeassistant/xxx-base:3.10
