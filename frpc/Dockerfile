@@ -1,24 +1,47 @@
-# 使用 ghcr.io 镜像，避免 Docker Hub 超时
-ARG BUILD_FROM="ghcr.io/home-assistant/aarch64-base:3.10"
-FROM $BUILD_FROM
+FROM alpine:3.20
 
-# 其余保持不变
 ARG BUILD_ARCH
-ARG BUILD_DATE
-ARG BUILD_REF
-ARG BUILD_VERSION
 
-LABEL \
-    io.hass.name="Frp Client" \
-    io.hass.description="Fast reverse proxy client for Home Assistant" \
-    io.hass.arch="${BUILD_ARCH}" \
-    io.hass.type="addon" \
-    io.hass.version="${BUILD_VERSION}" \
-    maintainer="sunboss <you@example.com>"
+# 安装依赖
+RUN apk add --no-cache wget tar jq
 
-# 复制启动脚本与配置文件
-COPY rootfs /
+# 根据架构下载并安装 frpc（使用 ghproxy.net 加速，针对国内用户）
+RUN case "${BUILD_ARCH}" in \
+      "amd64") \
+        wget https://ghproxy.net/https://github.com/fatedier/frp/releases/download/v0.63.0/frp_0.63.0_linux_amd64.tar.gz && \
+        tar xzvf frp_0.63.0_linux_amd64.tar.gz && \
+        mv frp_0.63.0_linux_amd64/frpc /usr/bin/frpc && \
+        rm -rf frp_0.63.0_linux_amd64*; \
+        ;; \
+      "aarch64") \
+        wget https://ghproxy.net/https://github.com/fatedier/frp/releases/download/v0.63.0/frp_0.63.0_linux_arm64.tar.gz && \
+        tar xzvf frp_0.63.0_linux_arm64.tar.gz && \
+        mv frp_0.63.0_linux_arm64/frpc /usr/bin/frpc && \
+        rm -rf frp_0.63.0_linux_arm64*; \
+        ;; \
+      "armv7") \
+        wget https://ghproxy.net/https://github.com/fatedier/frp/releases/download/v0.63.0/frp_0.63.0_linux_arm.tar.gz && \
+        tar xzvf frp_0.63.0_linux_arm.tar.gz && \
+        mv frp_0.63.0_linux_arm/frpc /usr/bin/frpc && \
+        rm -rf frp_0.63.0_linux_arm*; \
+        ;; \
+      "armhf") \
+        wget https://ghproxy.net/https://github.com/fatedier/frp/releases/download/v0.63.0/frp_0.63.0_linux_arm.tar.gz && \
+        tar xzvf frp_0.63.0_linux_arm.tar.gz && \
+        mv frp_0.63.0_linux_arm/frpc /usr/bin/frpc && \
+        rm -rf frp_0.63.0_linux_arm*; \
+        ;; \
+      *) \
+        echo "Unsupported architecture: ${BUILD_ARCH}"; exit 1; \
+        ;; \
+    esac
 
-RUN chmod +x /usr/bin/frpc /etc/services.d/frpc/run
+# 设置执行权限
+RUN chmod +x /usr/bin/frpc
 
-EXPOSE 80 443
+# 复制启动脚本
+COPY run.sh /run.sh
+RUN chmod +x /run.sh
+
+# 运行脚本
+CMD ["/run.sh"]
