@@ -1,4 +1,4 @@
-FROM fatedier/frp:v0.51.3
+FROM ghcr.io/sunboss/frp:v0.51.3
 
 # 复制启动脚本
 COPY run.sh /
