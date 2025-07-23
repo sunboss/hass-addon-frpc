@@ -1,0 +1,36 @@
+name: "Frpc for Home Assistant"
+version: "1.0.0"
+slug: "frpc"
+description: "基于 fatedier/frp 的 frpc 客户端，支持在 HA 中一键穿透内网"
+url: "https://github.com/sunboss/hass-addon-frpc"
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+startup: services
+boot: auto
+init: false
+hassio_api: false
+privileged:
+  - NET_ADMIN
+map:
+  - ssl
+options:
+  server_addr: "example.com"
+  server_port: 7000
+  token: ""
+  tunnels: []
+schema:
+  server_addr: str
+  server_port: int
+  token: str
+  tunnels:
+    - name: str
+      type: str
+      local_ip: str
+      local_port: int
+      remote_port: int
+      subdomain: str?
+      custom_domains: str?
