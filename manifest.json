@@ -1,0 +1,33 @@
+{
+  "name": "FRP",
+  "version": "1.0.0",
+  "slug": "frpc",
+  "description": "Fast Reverse Proxy Client for Home Assistant",
+  "arch": ["aarch64", "amd64"],
+  "boot": "auto",
+  "image": "homeassistant/amd64-base:latest",
+  "startup": "application",
+  "url": "https://github.com/your-username/homeassistant-frpc-addon",
+  "repository": "https://github.com/your-username/homeassistant-frpc-addon",
+  "dependencies": [],
+  "config": [
+    {
+      "name": "server_addr",
+      "description": "The address of the FRP server",
+      "default": "frp.server.com",
+      "required": true
+    },
+    {
+      "name": "server_port",
+      "description": "The port of the FRP server",
+      "default": "7000",
+      "required": true
+    },
+    {
+      "name": "token",
+      "description": "The authentication token for FRP",
+      "default": "",
+      "required": false
+    }
+  ]
+}
