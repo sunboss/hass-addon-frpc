@@ -1,0 +1,8 @@
+{
+  "server_addr": "frps.example.com",
+  "server_port": 7000,
+  "token": "your-token",
+  "local_ip": "192.168.1.10",
+  "local_port": 80,
+  "subdomain": "homeassistant"
+}
