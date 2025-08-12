@@ -1,0 +1,26 @@
+{
+  "name": "FRPC",
+  "version": "1.0.0",
+  "slug": "frpc",
+  "description": "FRPC client for Home Assistant",
+  "startup": "application",
+  "arch": ["amd64", "armv7", "aarch64"],
+  "hassio_api": true,
+  "boot": "auto",
+  "options": {
+    "server_addr": "frps.example.com",
+    "server_port": 7000,
+    "token": "your-token",
+    "local_ip": "192.168.1.10",
+    "local_port": 80,
+    "subdomain": "homeassistant"
+  },
+  "schema": {
+    "server_addr": "str",
+    "server_port": "int",
+    "token": "str",
+    "local_ip": "str",
+    "local_port": "int",
+    "subdomain": "str"
+  }
+}
